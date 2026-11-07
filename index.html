@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sopa de Letras - Modelos de Desarrollo Sostenible</title>
+    <style>
+        :root {
+            --primary: #2d6a4f;
+            --primary-light: #52b788;
+            --primary-dark: #1b4332;
+            --accent: #d97706;
+            --accent-bg: #fef3c7;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #cbd5e1;
+            --found: #bbf7d0;
+            --found-text: #14532d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* CONTAINER */
+        main {
+            flex: 1;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* STATUS BAR */
+        .status-bar {
+            background: var(--card-bg);
+            padding: 12px 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .user-tag {
+            color: var(--primary);
+        }
+
+        .timer-tag {
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: #475569;
+        }
+
+        /* GAME LAYOUT */
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .game-layout {
+                grid-template-columns: 1fr 280px;
+            }
+        }
+
+        /* BOARD */
+        .board-container {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 4px;
+            width: 100%;
+            max-width: 450px;
+            aspect-ratio: 1;
+        }
+
+        .cell {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .cell.selecting {
+            background: #fef08a !important;
+            color: #854d0e;
+        }
+
+        .cell.found {
+            background: var(--found) !important;
+            color: var(--found-text) !important;
+            border-color: #86efac;
+        }
+
+        /* WORD LIST */
+        .word-panel {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .word-panel h3 {
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+        }
+
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        @media (min-width: 768px) {
+            .word-list {
+                flex-direction: column;
+            }
+        }
+
+        .word-item {
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.3s;
+        }
+
+        .word-item.found {
+            background: var(--found);
+            color: var(--found-text);
+            text-decoration: line-through;
+        }
+
+        /* DEFINITION DISPLAY */
+        .definition-panel {
+            background: var(--accent-bg);
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+
+        .definition-panel h4 {
+            color: var(--accent);
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .definition-panel p {
+            font-size: 0.95rem;
+            color: #78350f;
+            line-height: 1.4;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-card h2 {
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        .modal-card p {
+            color: #64748b;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* INSIGNIA STYLES */
+        .badge-container {
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .badge-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            animation: popIn 0.5s ease-out;
+        }
+
+        .badge-gold { background: linear-gradient(135deg, #fef08a, #eab308); border: 4px solid #facc15; }
+        .badge-silver { background: linear-gradient(135deg, #e2e8f0, #94a3b8); border: 4px solid #cbd5e1; }
+        .badge-bronze { background: linear-gradient(135deg, #ffedd5, #d97706); border: 4px solid #f97316; }
+
+        .badge-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary-light);
+        }
+
+        .btn-start {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .btn-start:hover {
+            background: var(--primary-dark);
+        }
+
+        /* FOOTER */
+        footer {
+            background: #0f172a;
+            color: #94a3b8;
+            text-align: center;
+            padding: 15px;
+            font-size: 0.85rem;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Red de Juventudes FUSALMO</h1>
+        <p>Sopa de Letras: Modelos de Desarrollo Sostenible</p>
+    </header>
+
+    <main>
+        <div class="status-bar">
+            <span class="user-tag" id="user-display">Participante: ---</span>
+            <span class="timer-tag" id="timer-display">⏱ 00:00</span>
+            <span id="score-display">Encontradas: 0/10</span>
+        </div>
+
+        <div class="game-layout">
+            <div class="board-container">
+                <div class="grid" id="grid"></div>
+            </div>
+
+            <div class="word-panel">
+                <h3>Palabras a buscar:</h3>
+                <div class="word-list" id="word-list"></div>
+            </div>
+        </div>
+
+        <div class="definition-panel" id="definition-panel">
+            <h4 id="def-title">💡 ¿Sabías qué?</h4>
+            <p id="def-text">Encuentra las palabras en la sopa de letras para descubrir a qué pertenecen o qué significan.</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>© Red de Juventudes FUSALMO</p>
+    </footer>
+
+    <!-- MODAL DE INICIO -->
+    <div class="modal-overlay" id="start-modal">
+        <div class="modal-card">
+            <h2>¡Bienvenido/a a la Dinámica!</h2>
+            <p>Ingresa tu nombre y apellido para comenzar a buscar los conceptos clave del Desarrollo Sostenible.</p>
+            <form id="start-form">
+                <div class="form-group">
+                    <label for="fullname">Nombre y Apellido:</label>
+                    <input type="text" id="fullname" required placeholder="Ej: María López" autocomplete="off">
+                </div>
+                <button type="submit" class="btn-start">Iniciar Juego</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE FELICITACIONES -->
+    <div class="modal-overlay" id="end-modal" style="display: none;">
+        <div class="modal-card">
+            <h2>¡Excelente Trabajo!</h2>
+            
+            <div class="badge-container" id="badge-container">
+                <!-- Se genera dinámicamente -->
+            </div>
+
+            <p id="end-message"></p>
+            <button class="btn-start" onclick="location.reload()">Jugar de Nuevo</button>
+        </div>
+    </div>
+
+    <script>
+        const WORDS_DATA = [
+            { word: 'SOSTENIBLE', def: 'Modelo de progreso que satisface las necesidades presentes sin poner en riesgo las futuras.' },
+            { word: 'CIRCULAR', def: 'Modelo económico enfocado en Reducir, Reutilizar, Reciclar y Regenerar recursos.' },
+            { word: 'EQUIDAD', def: 'Principio fundamental de la Dimensión Social para garantizar oportunidades justas a todos.' },
+            { word: 'ALIANZAS', def: 'ODS 17: Unión del sector público, privado y sociedad civil para lograr los objetivos.' },
+            { word: 'RECURSOS', def: 'Patrimonio ambiental que debemos administrar con responsabilidad y ética intergeneracional.' },
+            { word: 'GOBERNANZA', def: 'Coordinación institucional multinivel necesaria para transformar políticas globales en locales.' },
+            { word: 'JUVENTUD', def: 'Agentes de cambio y líderes comunitarios clave para la acción e innovación local.' },
+            { word: 'ECOLOGICO', def: 'Enfoque de conservación enfocado en respetar los límites y equilibrios de los ecosistemas.' },
+            { word: 'REDUCIR', def: 'Acción primaria del consumo responsable para disminuir la huella ambiental y los desechos.' },
+            { word: 'ACCION', def: 'Paso imprescindible de la movilización juvenil para pasar de la teoría a soluciones comunitarias.' }
+        ];
+
+        const GRID_SIZE = 12;
+        let gridMatrix = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(''));
+        let placedWords = [];
+        let foundWords = new Set();
+        let isSelecting = false;
+        let selectionStart = null;
+        let currentSelection = [];
+        let startTime = null;
+        let timerInterval = null;
+        let userName = '';
+
+        // Form Submission
+        document.getElementById('start-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            userName = document.getElementById('fullname').value.trim();
+            if (userName) {
+                document.getElementById('user-display').innerText = `Participante: ${userName}`;
+                document.getElementById('start-modal').style.display = 'none';
+                startTimer();
+            }
+        });
+
+        // Timer Function
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+                const secs = String(elapsed % 60).padStart(2, '0');
+                document.getElementById('timer-display').innerText = `⏱ ${mins}:${secs}`;
+            }, 1000);
+        }
+
+        // Initialize Board & Words
+        function initGame() {
+            // Render word list
+            const wordListEl = document.getElementById('word-list');
+            WORDS_DATA.forEach(item => {
+                const badge = document.createElement('span');
+                badge.className = 'word-item';
+                badge.id = `word-${item.word}`;
+                badge.innerText = item.word;
+                wordListEl.appendChild(badge);
+            });
+
+            // Place words in grid
+            WORDS_DATA.forEach(item => {
+                placeWord(item.word);
+            });
+
+            // Fill empty cells
+            const letters = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    if (!gridMatrix[r][c]) {
+                        gridMatrix[r][c] = letters.charAt(Math.floor(Math.random() * letters.length));
+                    }
+                }
+            }
+
+            // Render grid
+            const gridEl = document.getElementById('grid');
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.innerText = gridMatrix[r][c];
+                    gridEl.appendChild(cell);
+                }
+            }
+
+            setupInteractions();
+        }
+
+        // Place a single word
+        function placeWord(word) {
+            const directions = [
+                { r: 0, c: 1 },  // Horizontal
+                { r: 1, c: 0 },  // Vertical
+                { r: 1, c: 1 }   // Diagonal
+            ];
+
+            let placed = false;
+            let attempts = 0;
+
+            while (!placed && attempts < 150) {
+                attempts++;
+                const dir = directions[Math.floor(Math.random() * directions.length)];
+                const startR = Math.floor(Math.random() * GRID_SIZE);
+                const startC = Math.floor(Math.random() * GRID_SIZE);
+
+                const endR = startR + dir.r * (word.length - 1);
+                const endC = startC + dir.c * (word.length - 1);
+
+                if (endR < GRID_SIZE && endC < GRID_SIZE) {
+                    let canPlace = true;
+                    for (let i = 0; i < word.length; i++) {
+                        const r = startR + dir.r * i;
+                        const c = startC + dir.c * i;
+                        if (gridMatrix[r][c] && gridMatrix[r][c] !== word.charAt(i)) {
+                            canPlace = false;
+                            break;
+                        }
+                    }
+
+                    if (canPlace) {
+                        for (let i = 0; i < word.length; i++) {
+                            const r = startR + dir.r * i;
+                            const c = startC + dir.c * i;
+                            gridMatrix[r][c] = word.charAt(i);
+                        }
+                        placedWords.push({ word, startR, startC, dir, len: word.length });
+                        placed = true;
+                    }
+                }
+            }
+        }
+
+        // Mouse & Touch Selection Handling
+        function setupInteractions() {
+            const gridEl = document.getElementById('grid');
+
+            const getCellFromEvent = (e) => {
+                let clientX = e.clientX;
+                let clientY = e.clientY;
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                }
+                const target = document.elementFromPoint(clientX, clientY);
+                return target && target.classList.contains('cell') ? target : null;
+            };
+
+            const handleStart = (e) => {
+                const cell = getCellFromEvent(e);
+                if (cell) {
+                    isSelecting = true;
+                    selectionStart = { r: parseInt(cell.dataset.row), c: parseInt(cell.dataset.col) };
+                    updateSelection([selectionStart]);
+                }
+            };
+
+            const handleMove = (e) => {
+                if (!isSelecting) return;
+                const cell = getCellFromEvent(e);
+                if (cell) {
+                    const current = { r: parseInt(cell.dataset.row), c: parseInt(cell.dataset.col) };
+                    const line = getLineCells(selectionStart, current);
+                    updateSelection(line);
+                }
+            };
+
+            const handleEnd = () => {
+                if (!isSelecting) return;
+                isSelecting = false;
+                checkSelection();
+                clearSelectionHighlights();
+            };
+
+            gridEl.addEventListener('mousedown', handleStart);
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('mouseup', handleEnd);
+
+            gridEl.addEventListener('touchstart', handleStart, { passive: true });
+            window.addEventListener('touchmove', handleMove, { passive: true });
+            window.addEventListener('touchend', handleEnd);
+        }
+
+        // Calculate straight line cells between start and end
+        function getLineCells(start, end) {
+            const dr = end.r - start.r;
+            const dc = end.c - start.c;
+            
+            // Check if valid direction (H, V, D)
+            const isH = dr === 0;
+            const isV = dc === 0;
+            const isD = Math.abs(dr) === Math.abs(dc);
+
+            if (!isH && !isV && !isD) return [start];
+
+            const steps = Math.max(Math.abs(dr), Math.abs(dc));
+            const stepR = dr === 0 ? 0 : dr / steps;
+            const stepC = dc === 0 ? 0 : dc / steps;
+
+            const line = [];
+            for (let i = 0; i <= steps; i++) {
+                line.push({ r: start.r + stepR * i, c: start.c + stepC * i });
+            }
+            return line;
+        }
+
+        function updateSelection(line) {
+            clearSelectionHighlights();
+            currentSelection = line;
+            line.forEach(pos => {
+                const cell = document.querySelector(`.cell[data-row="${pos.r}"][data-col="${pos.c}"]`);
+                if (cell) cell.classList.add('selecting');
+            });
+        }
+
+        function clearSelectionHighlights() {
+            document.querySelectorAll('.cell.selecting').forEach(c => c.classList.remove('selecting'));
+        }
+
+        // Check if selected letters form a target word
+        function checkSelection() {
+            if (!currentSelection || currentSelection.length < 2) return;
+
+            const selectedWord = currentSelection.map(pos => gridMatrix[pos.r][pos.c]).join('');
+            const reversedWord = selectedWord.split('').reverse().join('');
+
+            const match = WORDS_DATA.find(w => (w.word === selectedWord || w.word === reversedWord) && !foundWords.has(w.word));
+
+            if (match) {
+                foundWords.add(match.word);
+
+                // Highlight cell Permanently
+                currentSelection.forEach(pos => {
+                    const cell = document.querySelector(`.cell[data-row="${pos.r}"][data-col="${pos.c}"]`);
+                    if (cell) cell.classList.add('found');
+                });
+
+                // Highlight word in list
+                document.getElementById(`word-${match.word}`).classList.add('found');
+
+                // Update score & definition
+                document.getElementById('score-display').innerText = `Encontradas: ${foundWords.size}/10`;
+                document.getElementById('def-title').innerText = `CONCEPTO: ${match.word}`;
+                document.getElementById('def-text').innerText = match.def;
+
+                // Check game complete
+                if (foundWords.size === WORDS_DATA.length) {
+                    clearInterval(timerInterval);
+                    setTimeout(showCompletion, 500);
+                }
+            }
+        }
+
+        function showCompletion() {
+            const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+            const timeTaken = document.getElementById('timer-display').innerText.replace('⏱ ', '');
+            
+            // Lógica de Tiempos Solicitada:
+            // Oro: Menos de 2:00 min (< 120 seg)
+            // Plata: Entre 2:00 min y 3:00 min (120 a 180 seg)
+            // Bronce: Más de 3:00 min (> 180 seg)
+            let badgeClass = '';
+            let badgeIcon = '';
+            let badgeTitle = '';
+
+            if (elapsedSeconds < 120) { 
+                badgeClass = 'badge-gold';
+                badgeIcon = '🥇';
+                badgeTitle = 'Insignia de Oro: Líder Sostenible';
+            } else if (elapsedSeconds <= 180) { 
+                badgeClass = 'badge-silver';
+                badgeIcon = '🥈';
+                badgeTitle = 'Insignia de Plata: Guardián Sostenible';
+            } else {
+                badgeClass = 'badge-bronze';
+                badgeIcon = '🥉';
+                badgeTitle = 'Insignia de Bronce: Agente en Formación';
+            }
+
+            // Renderizar la insignia
+            document.getElementById('badge-container').innerHTML = `
+                <div class="badge-icon ${badgeClass}">${badgeIcon}</div>
+                <div class="badge-title">${badgeTitle}</div>
+            `;
+
+            document.getElementById('end-message').innerHTML = `
+                <strong>¡Felicidades, ${userName}!</strong><br><br>
+                Has encontrado las 10 palabras clave de la sostenibilidad en un tiempo de <strong>${timeTaken}</strong>.<br><br>
+                ¡No olvides compartirnos la realización de la actividad por nuestro grupo de WhatsApp!
+            `;
+            document.getElementById('end-modal').style.display = 'flex';
+        }
+
+        // Launch Game
+        initGame();
+    </script>
+</body>
+</html>
